@@ -2,18 +2,18 @@
 
 import React, { useState } from "react";
 import { parsePostTXT } from "./parser";
-import { parse } from "path";
+import { Video } from "./types";
 
 export default function HomePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string>("");
-  const [postContent, setPostContent] = useState<string>("");
+  const [postContent, setPostContent] = useState<Array<Video>>([]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFile(e.target.files[0]);
       setError("");
-      setPostContent("");
+      setPostContent([]);
     }
   };
 
@@ -45,8 +45,8 @@ export default function HomePage() {
 
       const data = await response.json();
       if (data.postContent) {
-        const content = parsePostTXT(data.postContent);
-        setPostContent(content[0]['url']); // TODO: Temporarily displays the first url. It should call the upload API in the final version.
+        const content: Array<Video> = parsePostTXT(data.postContent);
+        setPostContent(content);
       }
     } catch (err: any) {
       setError(err.message || "An error occurred during upload.");
@@ -56,9 +56,7 @@ export default function HomePage() {
   return (
     <main className="w-full min-h-screen flex flex-col items-center justify-center p-4">
       <div className="bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-8 w-full max-w-md flex flex-col items-center">
-        <h1 className="text-3xl font-bold text-white mb-4">
-          Upload Your .zip File
-        </h1>
+        <h1 className="text-3xl font-bold text-white mb-4">Upload Your .zip File</h1>
         <p className="text-white text-sm mb-6 text-center">
           This page extracts <code>Posts/Post.txt</code> from the ZIP
         </p>
@@ -90,12 +88,21 @@ export default function HomePage() {
           Upload & Extract
         </button>
 
-        {postContent && (
+        {postContent.length > 0 && (
           <div className="mt-6 w-full bg-white/20 rounded-md p-4">
-            <h2 className="text-white text-lg font-bold mb-2">
-              Contents of Posts/Post.txt:
-            </h2>
-            <div className="text-white whitespace-pre-wrap">{postContent}</div>
+            <h2 className="text-white text-lg font-bold mb-2">Contents of Posts/Post.txt:</h2>
+            <ul className="text-white space-y-4">
+              {postContent.map((video, index) => (
+                <li key={index} className="flex items-center justify-between">
+                  <video src={video.url} controls className="w-1/2 h-auto"></video>
+                  <button
+                    className="ml-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out"
+                  >
+                    Use
+                  </button>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>
