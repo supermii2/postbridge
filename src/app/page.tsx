@@ -46,7 +46,14 @@ export default function HomePage() {
       const data = await response.json();
       if (data.postContent) {
         const content = parsePostTXT(data.postContent);
-        setPostContent(content[0]['url']); // TODO: Temporarily displays the first url. It should call the upload API in the final version.
+        // TODO: Temporarily displays the first url. It should call the upload API in the final version.
+        if ('links' in content[0]) {
+            // If content[0] is of type Photo, join the 'links' array into a single string
+            setPostContent(content[0].links.join(', '));  // Join the links as a comma-separated string
+        } else {
+            // If content[0] is of type Video, access the 'url' property
+            setPostContent(content[0].url);
+        }
       }
     } catch (err: any) {
       setError(err.message || "An error occurred during upload.");
