@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { parsePostTXT } from "./parser";
+import { parse } from "path";
 
 export default function HomePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -43,7 +45,8 @@ export default function HomePage() {
 
       const data = await response.json();
       if (data.postContent) {
-        setPostContent(data.postContent);
+        const content = parsePostTXT(data.postContent);
+        setPostContent(content[0]['url']); // TODO: Temporarily displays the first url. It should call the upload API in the final version.
       }
     } catch (err: any) {
       setError(err.message || "An error occurred during upload.");
