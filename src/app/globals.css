@@ -15,7 +15,10 @@
 }
 
 body {
+  @apply bg-gradient-to-r from-purple-600 via-indigo-600 to-blue-600 min-h-screen flex items-center justify-center;
+  margin: 0;
+  padding: 0;
+  font-family: "Arial", sans-serif;
   color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--background);
 }
