@@ -2,18 +2,18 @@
 
 import React, { useState } from "react";
 import { parsePostTXT } from "./parser";
-import { Video } from "./types";
+import { parse } from "path";
 
 export default function HomePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string>("");
-  const [postContent, setPostContent] = useState<Array<Video>>([]);
+  const [postContent, setPostContent] = useState<string>("");
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFile(e.target.files[0]);
       setError("");
-      setPostContent([]);
+      setPostContent("");
     }
   };
 
@@ -45,8 +45,15 @@ export default function HomePage() {
 
       const data = await response.json();
       if (data.postContent) {
-        const content: Array<Video> = parsePostTXT(data.postContent);
-        setPostContent(content);
+        const content = parsePostTXT(data.postContent);
+        // TODO: Temporarily displays the first url. It should call the upload API in the final version.
+        if ('links' in content[0]) {
+            // If content[0] is of type Photo, join the 'links' array into a single string
+            setPostContent(content[0].links.join(', '));  // Join the links as a comma-separated string
+        } else {
+            // If content[0] is of type Video, access the 'url' property
+            setPostContent(content[0].url);
+        }
       }
     } catch (err: any) {
       setError(err.message || "An error occurred during upload.");
@@ -90,25 +97,12 @@ export default function HomePage() {
           Upload & Extract
         </button>
 
-        {postContent.length > 0 && (
+        {postContent && (
           <div className="mt-6 w-full bg-white/20 rounded-md p-4">
             <h2 className="text-white text-lg font-bold mb-2">
               Contents of Posts/Post.txt:
             </h2>
-            <ul className="text-white space-y-4">
-              {postContent.map((video, index) => (
-                <li key={index} className="flex items-center justify-between">
-                  <video
-                    src={video.url}
-                    controls
-                    className="w-1/2 h-auto"
-                  ></video>
-                  <button className="ml-4 bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out">
-                    Use
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <div className="text-white whitespace-pre-wrap">{postContent}</div>
           </div>
         )}
       </div>
