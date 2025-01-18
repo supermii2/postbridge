@@ -1,19 +1,22 @@
 "use client";
 
 import React, { useState } from "react";
-import { parsePostTXT } from "./parser";
-import { parse } from "path";
+import { parsePostTXT, Video, Photo } from "./parser";
 
 export default function HomePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string>("");
-  const [postContent, setPostContent] = useState<string>("");
+  const [posts, setPosts] = useState<(Video | Photo)[]>([]);
+  const [currentPostIndex, setCurrentPostIndex] = useState<number>(0);
+  const [currentPhotoIndices, setCurrentPhotoIndices] = useState<number[]>([]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFile(e.target.files[0]);
       setError("");
-      setPostContent("");
+      setPosts([]);
+      setCurrentPostIndex(0);
+      setCurrentPhotoIndices([]);
     }
   };
 
@@ -22,7 +25,6 @@ export default function HomePage() {
       setError("Please select a .zip file before uploading.");
       return;
     }
-
     if (!selectedFile.name.toLowerCase().endsWith(".zip")) {
       setError("Only .zip files are allowed.");
       return;
@@ -45,19 +47,126 @@ export default function HomePage() {
 
       const data = await response.json();
       if (data.postContent) {
-        const content = parsePostTXT(data.postContent);
-        // TODO: Temporarily displays the first url. It should call the upload API in the final version.
-        if ('links' in content[0]) {
-            // If content[0] is of type Photo, join the 'links' array into a single string
-            setPostContent(content[0].links.join(', '));  // Join the links as a comma-separated string
-        } else {
-            // If content[0] is of type Video, access the 'url' property
-            setPostContent(content[0].url);
-        }
+        let parsed = parsePostTXT(data.postContent);
+        parsed = parsed.filter((p) => {
+          if ("url" in p) {
+            return p.url.trim().length > 0;
+          } else {
+            return p.links.length > 0;
+          }
+        });
+        setPosts(parsed);
+        setCurrentPhotoIndices(Array(parsed.length).fill(0));
+        setError("");
       }
     } catch (err: any) {
       setError(err.message || "An error occurred during upload.");
     }
+  };
+
+  const showPreviousPost = () => {
+    setCurrentPostIndex((prevIndex) => {
+      const newIndex = prevIndex - 1;
+      return newIndex < 0 ? posts.length - 1 : newIndex;
+    });
+  };
+
+  const showNextPost = () => {
+    setCurrentPostIndex((prevIndex) => (prevIndex + 1) % posts.length);
+  };
+
+  const handleUsePost = () => {
+    console.log("Use post clicked (placeholder).");
+  };
+
+  const showNextPhoto = () => {
+    const currentPost = posts[currentPostIndex];
+    if (!("links" in currentPost)) return;
+
+    setCurrentPhotoIndices((prev) => {
+      const newIndices = [...prev];
+      const totalPhotos = currentPost.links.length;
+      const currentPhoto = prev[currentPostIndex];
+      const nextPhoto = (currentPhoto + 1) % totalPhotos;
+      newIndices[currentPostIndex] = nextPhoto;
+      return newIndices;
+    });
+  };
+
+  const showPrevPhoto = () => {
+    const currentPost = posts[currentPostIndex];
+    if (!("links" in currentPost)) return;
+
+    setCurrentPhotoIndices((prev) => {
+      const newIndices = [...prev];
+      const totalPhotos = currentPost.links.length;
+      const currentPhoto = prev[currentPostIndex];
+      const prevPhoto =
+        currentPhoto - 1 < 0 ? totalPhotos - 1 : currentPhoto - 1;
+      newIndices[currentPostIndex] = prevPhoto;
+      return newIndices;
+    });
+  };
+
+  const renderCurrentPost = () => {
+    if (posts.length === 0) return null;
+
+    const currentPost = posts[currentPostIndex];
+    if ("url" in currentPost) {
+      return (
+        <div className="flex flex-col items-center">
+          <video
+            src={currentPost.url}
+            controls
+            className="mb-4 max-w-full rounded"
+            width={320}
+          />
+          <button
+            onClick={handleUsePost}
+            className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-full transition duration-300 ease-in-out"
+          >
+            Use
+          </button>
+        </div>
+      );
+    }
+
+    const totalPhotos = currentPost.links.length;
+    const photoIndex = currentPhotoIndices[currentPostIndex];
+    const currentPhotoUrl = currentPost.links[photoIndex];
+
+    return (
+      <div className="flex flex-col items-center">
+        <img
+          key={currentPhotoUrl}
+          src={currentPhotoUrl}
+          alt={`Photo ${photoIndex + 1}`}
+          className="mb-4 rounded max-w-full"
+        />
+        {totalPhotos > 1 && (
+          <div className="flex space-x-2 mb-4">
+            <button
+              onClick={showPrevPhoto}
+              className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-3 rounded-full"
+            >
+              Prev Photo
+            </button>
+            <button
+              onClick={showNextPhoto}
+              className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-3 rounded-full"
+            >
+              Next Photo
+            </button>
+          </div>
+        )}
+        <button
+          onClick={handleUsePost}
+          className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-full transition duration-300 ease-in-out"
+        >
+          Use
+        </button>
+      </div>
+    );
   };
 
   return (
@@ -67,7 +176,7 @@ export default function HomePage() {
           Upload Your .zip File
         </h1>
         <p className="text-white text-sm mb-6 text-center">
-          This page extracts <code>Posts/Post.txt</code> from the ZIP
+          This page extracts <code>Posts/Post.txt</code> from the ZIP.
         </p>
 
         <div className="flex flex-col items-center w-full mb-4">
@@ -97,12 +206,26 @@ export default function HomePage() {
           Upload & Extract
         </button>
 
-        {postContent && (
-          <div className="mt-6 w-full bg-white/20 rounded-md p-4">
+        {posts.length > 0 && (
+          <div className="mt-6 w-full bg-white/20 rounded-md p-4 flex flex-col items-center">
             <h2 className="text-white text-lg font-bold mb-2">
-              Contents of Posts/Post.txt:
+              Post {currentPostIndex + 1} of {posts.length}
             </h2>
-            <div className="text-white whitespace-pre-wrap">{postContent}</div>
+            {renderCurrentPost()}
+            <div className="mt-4 flex space-x-4">
+              <button
+                onClick={showPreviousPost}
+                className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-3 rounded-full"
+              >
+                Previous Post
+              </button>
+              <button
+                onClick={showNextPost}
+                className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-3 rounded-full"
+              >
+                Next Post
+              </button>
+            </div>
           </div>
         )}
       </div>
