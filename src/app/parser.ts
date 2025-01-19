@@ -18,7 +18,7 @@ function parseSinglePost(block: string): Video | Photo | null {
 
   for (const line of lines) {
     const match = line.match(/^([^:]+):\s*(.*)$/);
-    if (match) {
+    if (line.slice(0, 5) !== "https" && match) {
       const key = match[1].trim();
       const value = match[2].trim();
       if (key.toLowerCase() === "title") {
