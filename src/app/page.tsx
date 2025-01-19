@@ -76,7 +76,13 @@ export default function HomePage() {
   };
 
   const handleUsePost = () => {
-    console.log("Use post clicked (placeholder).");
+    // check if the post is a video or photo
+    const currentPost = posts[currentPostIndex];
+    if ("url" in currentPost) {
+      console.log("Use video clicked (placeholder).");
+    } else {
+      console.log("Use photo clicked (placeholder).");
+    }
   };
 
   const showNextPhoto = () => {
@@ -128,9 +134,16 @@ export default function HomePage() {
     const totalPhotos = currentPost.links.length;
     const photoIndex = currentPhotoIndices[currentPostIndex];
     const currentPhotoUrl = currentPost.links[photoIndex];
+    const currentPhotoSetUrl = currentPost.links;
 
     return (
       <div className="flex flex-col items-center">
+        {/* Render Title if available */}
+        {currentPost.title && (
+          <h3 className="text-white text-lg font-semibold mb-2 text-center">
+            {currentPost.title}
+          </h3>
+        )}
         <img
           key={currentPhotoUrl}
           src={currentPhotoUrl}
