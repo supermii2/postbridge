@@ -130,7 +130,7 @@ export default function HomePage() {
     }
   };
 
-  const handleSharePhotos = async(photoUrls : Array<string>) => {
+  const handleSharePhotos = async(photoUrls : Array<string>, title: string = "Check out this set of photos") => {
     try {
         const response = await fetch('/api/getAccessToken', {
             method: 'POST',
@@ -153,7 +153,7 @@ export default function HomePage() {
         window.xhs.share({
             shareInfo: {
                 type: 'normal',
-                title: 'Check out this video!',
+                title: title,
                 images: photoUrls,
                 cover: 'https://example.com/cover.jpg', // Replace with your cover image URL
             },
@@ -189,7 +189,7 @@ export default function HomePage() {
       return handleShareVideo(currentPost.url)
     } else {
       console.log("Use photo clicked (placeholder).");
-      return handleSharePhotos(currentPost.links)
+      return handleSharePhotos(currentPost.links, currentPost.title)
     }
   };
 
