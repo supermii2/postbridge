@@ -121,12 +121,6 @@ export default function HomePage() {
             className="mb-4 max-w-full rounded"
             width={320}
           />
-          <button
-            onClick={handleUsePost}
-            className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-full transition duration-300 ease-in-out"
-          >
-            Use
-          </button>
         </div>
       );
     }
@@ -159,12 +153,6 @@ export default function HomePage() {
             </button>
           </div>
         )}
-        <button
-          onClick={handleUsePost}
-          className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-full transition duration-300 ease-in-out"
-        >
-          Use
-        </button>
       </div>
     );
   };
@@ -217,13 +205,19 @@ export default function HomePage() {
                 onClick={showPreviousPost}
                 className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-3 rounded-full"
               >
-                Previous Post
+                &lt;
+              </button>
+              <button
+                onClick={handleUsePost}
+                className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-full transition duration-300 ease-in-out"
+              >
+                Use
               </button>
               <button
                 onClick={showNextPost}
                 className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-3 rounded-full"
               >
-                Next Post
+                &gt;
               </button>
             </div>
           </div>
