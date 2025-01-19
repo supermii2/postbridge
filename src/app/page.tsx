@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { parsePostTXT } from "./parser";
-import { Video } from "./types";
+import { parsePostTXT, Video, Photo } from "./parser";
 import Script from "next/script";
 
 declare global {
@@ -27,7 +26,6 @@ declare global {
     };
   }
 }
-import { parsePostTXT, Video, Photo } from "./parser";
 
 export default function HomePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
