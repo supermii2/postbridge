@@ -4,7 +4,7 @@ import crypto from 'crypto';
 import axios from 'axios';
 
 const APP_KEY = process.env.APP_KEY as string;
-const APP_SECRET = process.env.APP_KEY as string;
+const APP_SECRET = process.env.APP_SECRET as string;
 
 // Cache variables
 let cachedToken: string | null = null;
