@@ -2,6 +2,30 @@
 
 import React, { useState } from "react";
 import { parsePostTXT, Video, Photo } from "./parser";
+import Script from "next/script";
+
+declare global {
+  interface Window {
+    xhs?: {
+      share: (config: {
+        shareInfo: {
+          type: string;
+          title: string;
+          images?: Array<string>;
+          video?: string;
+          cover: string;
+        };
+        verifyConfig: {
+          appKey: string;
+          nonce: string;
+          timestamp: string;
+          signature: string;
+        };
+        fail: (error: { message: string }) => void;
+      }) => void;
+    };
+  }
+}
 
 export default function HomePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -64,6 +88,89 @@ export default function HomePage() {
     }
   };
 
+  const handleShareVideo = async(videoUrl : string) => {
+    try {
+        const response = await fetch('/api/getAccessToken', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}),
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok || data.code !== 0 || !data.success) {
+            throw new Error(data.msg || 'Failed to fetch access token.');
+        }
+
+        if (typeof window.xhs === 'undefined') {
+            throw new Error('Xiaohongshu SDK not loaded');
+        }
+
+        window.xhs.share({
+            shareInfo: {
+                type: 'video',
+                title: 'Check out this video!',
+                video: videoUrl,
+                cover: 'https://example.com/cover.jpg', // Replace with your cover image URL
+            },
+            verifyConfig: {
+                appKey: data.app_key,
+                nonce: data.nonce,
+                timestamp: data.timestamp,
+                signature: data.signature,
+            },
+            fail: (error) => {
+                console.error('Share failed:', error);
+            },
+        });           
+    } catch (error) {
+        console.error('Error:', error);
+    }
+  };
+
+  const handleSharePhotos = async(photoUrls : Array<string>) => {
+    try {
+        const response = await fetch('/api/getAccessToken', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({}),
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok || data.code !== 0 || !data.success) {
+            throw new Error(data.msg || 'Failed to fetch access token.');
+        }
+
+        if (typeof window.xhs === 'undefined') {
+            throw new Error('Xiaohongshu SDK not loaded');
+        }
+
+        window.xhs.share({
+            shareInfo: {
+                type: 'normal',
+                title: 'Check out this video!',
+                images: photoUrls,
+                cover: 'https://example.com/cover.jpg', // Replace with your cover image URL
+            },
+            verifyConfig: {
+                appKey: data.app_key,
+                nonce: data.nonce,
+                timestamp: data.timestamp,
+                signature: data.signature,
+            },
+            fail: (error) => {
+                console.error('Share failed:', error);
+            },
+          });           
+        } catch (error) {
+            console.error('Error:', error);
+        }
+      };
   const showPreviousPost = () => {
     setCurrentPostIndex((prevIndex) => {
       const newIndex = prevIndex - 1;
@@ -158,6 +265,8 @@ export default function HomePage() {
   };
 
   return (
+    <>
+    <Script src="https://fe-static.xhscdn.com/biz-static/goten/xhs-1.0.1.js" />
     <main className="w-full min-h-screen flex flex-col items-center justify-center p-4">
       <div className="bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-8 w-full max-w-md flex flex-col items-center">
         <h1 className="text-3xl font-bold text-white mb-4">
@@ -225,5 +334,6 @@ export default function HomePage() {
 
       </div>
     </main>
+    </>
   );
 }
