@@ -277,7 +277,7 @@ export default function HomePage() {
           {/* Instruction Button */}
           <button
             onClick={() => setShowInstructions(true)}
-            className="mt-6 mb-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full"
+            className="mt-2 mb-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full"
           >
             Instructions
           </button>
