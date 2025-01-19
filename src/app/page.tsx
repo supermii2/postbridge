@@ -287,9 +287,9 @@ export default function HomePage() {
             <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center text-black">
               <div className="bg-white p-8 rounded-lg max-w-sm w-full">
                 <h2 className="text-2xl font-bold mb-4">How to Use</h2>
-                <p className="mb-4">1. Upload a .zip file containing your TikTok posts.</p>
-                <p className="mb-4">2. Extract the Post.txt file and browse your content.</p>
-                <p className="mb-4">3. Click 'Use' to share a video or photo to Xiaohongshu.</p>
+                <p className="mb-4">1. Go to "Profile" - "Settings and Privacy" - "Account" - "Download Your Data".</p>
+                <p className="mb-4">2. Follow the instructions and make sure to ONLY check the option "POSTS".</p>
+                <p className="mb-4">3. Download this file and import it below.</p>
                 <button
                   onClick={() => setShowInstructions(false)}
                   className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full"
