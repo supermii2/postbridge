@@ -270,9 +270,9 @@ export default function HomePage() {
         <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md flex flex-col items-center">
           <h1 className="text-3xl font-bold text-black mb-4">Transfer your TikTok Posts</h1>
           <div className="flex items-center space-x-4 mb-6">
-            <img src="/tiktok.svg" alt="TikTok Logo" className="w-32 h-32" />
-            <img src="/arrow-right.svg" alt="Right Arrow" className="w-16 h-16" />
-            <img src="/xhs.svg" alt="XHS Logo" className="w-32 h-32" />
+            <img src="/tiktok.svg" alt="TikTok Logo" className="w-16 h-16" />
+            <img src="/arrow-right.svg" alt="Right Arrow" className="w-8 h-8" />
+            <img src="/xhs.svg" alt="XHS Logo" className="w-16 h-16" />
           </div>
           {/* Instruction Button */}
           <button
