@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { parsePostTXT, Video, Photo } from "./parser";
 import Script from "next/script";
+
 declare global {
   interface Window {
     xhs?: {
@@ -24,12 +25,15 @@ declare global {
     };
   }
 }
+
 export default function HomePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [error, setError] = useState<string>("");
   const [posts, setPosts] = useState<(Video | Photo)[]>([]);
   const [currentPostIndex, setCurrentPostIndex] = useState<number>(0);
   const [currentPhotoIndices, setCurrentPhotoIndices] = useState<number[]>([]);
+  const [showInstructions, setShowInstructions] = useState<boolean>(false); // New state for instructions modal
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
       setSelectedFile(e.target.files[0]);
@@ -39,6 +43,7 @@ export default function HomePage() {
       setCurrentPhotoIndices([]);
     }
   };
+
   const handleUpload = async () => {
     if (!selectedFile) {
       setError("Please select a .zip file before uploading.");
@@ -78,88 +83,92 @@ export default function HomePage() {
       setError(err.message || "An error occurred during upload.");
     }
   };
-  const handleShareVideo = async(videoUrl : string) => {
-    try {
-        const response = await fetch('/api/getAccessToken', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({}),
-        });
-        const data = await response.json();
 
-        if (!response.ok || data.code !== 0 || !data.success) {
-            throw new Error(data.msg || 'Failed to fetch access token.');
-        }
-        if (typeof window.xhs === 'undefined') {
-            throw new Error('Xiaohongshu SDK not loaded');
-        }
-        window.xhs.share({
-            shareInfo: {
-                type: 'video',
-                title: 'Check out this video!',
-                video: videoUrl,
-                cover: 'https://example.com/cover.jpg', // Replace with your cover image URL
-            },
-            verifyConfig: {
-                appKey: data.app_key,
-                nonce: data.nonce,
-                timestamp: data.timestamp,
-                signature: data.signature,
-            },
-            fail: (error) => {
-                console.error('Share failed:', error);
-            },
-        });
+  const handleShareVideo = async (videoUrl: string) => {
+    try {
+      const response = await fetch("/api/getAccessToken", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
+      const data = await response.json();
+
+      if (!response.ok || data.code !== 0 || !data.success) {
+        throw new Error(data.msg || "Failed to fetch access token.");
+      }
+      if (typeof window.xhs === "undefined") {
+        throw new Error("Xiaohongshu SDK not loaded");
+      }
+      window.xhs.share({
+        shareInfo: {
+          type: "video",
+          title: "Check out this video!",
+          video: videoUrl,
+          cover: "https://example.com/cover.jpg", // Replace with your cover image URL
+        },
+        verifyConfig: {
+          appKey: data.app_key,
+          nonce: data.nonce,
+          timestamp: data.timestamp,
+          signature: data.signature,
+        },
+        fail: (error) => {
+          console.error("Share failed:", error);
+        },
+      });
     } catch (error) {
-        console.error('Error:', error);
+      console.error("Error:", error);
     }
   };
-  const handleSharePhotos = async(photoUrls : Array<string>) => {
-    try {
-        const response = await fetch('/api/getAccessToken', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({}),
-        });
-        const data = await response.json();
 
-        if (!response.ok || data.code !== 0 || !data.success) {
-            throw new Error(data.msg || 'Failed to fetch access token.');
-        }
-        if (typeof window.xhs === 'undefined') {
-            throw new Error('Xiaohongshu SDK not loaded');
-        }
-        window.xhs.share({
-            shareInfo: {
-                type: 'normal',
-                title: 'Check out this video!',
-                images: photoUrls,
-                cover: 'https://example.com/cover.jpg', // Replace with your cover image URL
-            },
-            verifyConfig: {
-                appKey: data.app_key,
-                nonce: data.nonce,
-                timestamp: data.timestamp,
-                signature: data.signature,
-            },
-            fail: (error) => {
-                console.error('Share failed:', error);
-            },
-          });
-        } catch (error) {
-            console.error('Error:', error);
-        }
-      };
+  const handleSharePhotos = async (photoUrls: Array<string>) => {
+    try {
+      const response = await fetch("/api/getAccessToken", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({}),
+      });
+      const data = await response.json();
+
+      if (!response.ok || data.code !== 0 || !data.success) {
+        throw new Error(data.msg || "Failed to fetch access token.");
+      }
+      if (typeof window.xhs === "undefined") {
+        throw new Error("Xiaohongshu SDK not loaded");
+      }
+      window.xhs.share({
+        shareInfo: {
+          type: "normal",
+          title: "Check out this video!",
+          images: photoUrls,
+          cover: "https://example.com/cover.jpg", // Replace with your cover image URL
+        },
+        verifyConfig: {
+          appKey: data.app_key,
+          nonce: data.nonce,
+          timestamp: data.timestamp,
+          signature: data.signature,
+        },
+        fail: (error) => {
+          console.error("Share failed:", error);
+        },
+      });
+    } catch (error) {
+      console.error("Error:", error);
+    }
+  };
+
   const showPreviousPost = () => {
     setCurrentPostIndex((prevIndex) => {
       const newIndex = prevIndex - 1;
       return newIndex < 0 ? posts.length - 1 : newIndex;
     });
   };
+
   const showNextPost = () => {
     setCurrentPostIndex((prevIndex) => (prevIndex + 1) % posts.length);
   };
@@ -168,10 +177,10 @@ export default function HomePage() {
     const currentPost = posts[currentPostIndex];
     if ("url" in currentPost) {
       console.log("Use video clicked (placeholder).");
-      return handleShareVideo(currentPost.url)
+      return handleShareVideo(currentPost.url);
     } else {
       console.log("Use photo clicked (placeholder).");
-      return handleSharePhotos(currentPost.links)
+      return handleSharePhotos(currentPost.links);
     }
   };
 
@@ -187,6 +196,7 @@ export default function HomePage() {
       return newIndices;
     });
   };
+
   const showPrevPhoto = () => {
     const currentPost = posts[currentPostIndex];
     if (!("links" in currentPost)) return;
@@ -200,6 +210,7 @@ export default function HomePage() {
       return newIndices;
     });
   };
+
   const renderCurrentPost = () => {
     if (posts.length === 0) return null;
     const currentPost = posts[currentPostIndex];
@@ -221,9 +232,8 @@ export default function HomePage() {
 
     return (
       <div className="flex flex-col items-center">
-        {/* Render Title if available */}
         {currentPost.title && (
-          <h3 className="text-white text-lg font-semibold mb-2 text-center">
+          <h3 className="text-black text-lg font-semibold mb-2 text-center">
             {currentPost.title}
           </h3>
         )}
@@ -252,70 +262,97 @@ export default function HomePage() {
       </div>
     );
   };
+
   return (
     <>
-    <Script src="https://fe-static.xhscdn.com/biz-static/goten/xhs-1.0.1.js" />
-    <main className="w-full min-h-screen flex flex-col items-center justify-center p-4">
-      <div className="bg-white/10 backdrop-blur-md rounded-lg shadow-lg p-8 w-full max-w-md flex flex-col items-center">
-        <h1 className="text-3xl font-bold text-white mb-4">
-          Upload Your .zip File
-        </h1>
-        <p className="text-white text-sm mb-6 text-center">
-          This page extracts <code>Posts/Post.txt</code> from the ZIP.
-        </p>
-        <div className="flex flex-col items-center w-full mb-4">
-          <label className="w-full cursor-pointer flex flex-col items-center justify-center p-4 bg-white/20 rounded-md border-2 border-dashed border-white text-white hover:bg-white/30 transition">
-            <strong>Click or Drag &amp; Drop a .zip file here</strong>
-            <input
-              type="file"
-              accept=".zip"
-              className="hidden"
-              onChange={handleFileChange}
-            />
-          </label>
-        </div>
-        {selectedFile && (
-          <div className="text-white text-sm mb-4">
-            Selected file: <strong>{selectedFile.name}</strong>
+      <Script src="https://fe-static.xhscdn.com/biz-static/goten/xhs-1.0.1.js" />
+      <main className="w-full min-h-screen flex flex-col items-center justify-center p-4">
+        <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md flex flex-col items-center">
+          <h1 className="text-3xl font-bold text-black mb-4">Transfer your TikTok Posts</h1>
+          <div className="flex items-center space-x-4 mb-6">
+            <img src="/tiktok.svg" alt="TikTok Logo" className="w-32 h-32" />
+            <img src="/arrow-right.svg" alt="Right Arrow" className="w-16 h-16" />
+            <img src="/xhs.svg" alt="XHS Logo" className="w-32 h-32" />
           </div>
-        )}
-        {error && <div className="text-red-300 text-sm mb-4">{error}</div>}
-        <button
-          onClick={handleUpload}
-          className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out"
-        >
-          Upload & Extract
-        </button>
-        {posts.length > 0 && (
-          <div className="mt-6 w-full bg-white/20 rounded-md p-4 flex flex-col items-center">
-            <h2 className="text-white text-lg font-bold mb-2">
-              Post {currentPostIndex + 1} of {posts.length}
-            </h2>
-            {renderCurrentPost()}
-            <div className="mt-4 flex space-x-4">
-              <button
-                onClick={showPreviousPost}
-                className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-3 rounded-full"
-              >
-                &lt;
-              </button>
-              <button
-                onClick={handleUsePost}
-                className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-full transition duration-300 ease-in-out"
-              >
-                Use
-              </button>
-              <button
-                onClick={showNextPost}
-                className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-3 rounded-full"
-              >
-                &gt;
-              </button>
+          {/* Instruction Button */}
+          <button
+            onClick={() => setShowInstructions(true)}
+            className="mt-6 mb-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-full"
+          >
+            Instructions
+          </button>
+
+          {/* Modal for Instructions */}
+          {showInstructions && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center text-black">
+              <div className="bg-white p-8 rounded-lg max-w-sm w-full">
+                <h2 className="text-2xl font-bold mb-4">How to Use</h2>
+                <p className="mb-4">1. Upload a .zip file containing your TikTok posts.</p>
+                <p className="mb-4">2. Extract the Post.txt file and browse your content.</p>
+                <p className="mb-4">3. Click 'Use' to share a video or photo to Xiaohongshu.</p>
+                <button
+                  onClick={() => setShowInstructions(false)}
+                  className="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full"
+                >
+                  Close
+                </button>
+              </div>
             </div>
+          )}
+          <div className="flex flex-col items-center w-full mb-4">
+            <label className="w-full cursor-pointer flex flex-col items-center justify-center p-4 bg-white/20 rounded-md border-2 border-dashed border-black text-black hover:bg-white/30 transition">
+              <strong>Click or Drag &amp; Drop a .zip file here</strong>
+              <input
+                type="file"
+                accept=".zip"
+                className="hidden"
+                onChange={handleFileChange}
+              />
+            </label>
           </div>
-        )}
-      </div>
-    </main>
+          {selectedFile && (
+            <div className="text-black text-sm mb-4">
+              Selected file: <strong>{selectedFile.name}</strong>
+            </div>
+          )}
+          {error && <div className="text-red-300 text-sm mb-4">{error}</div>}
+          <button
+            onClick={handleUpload}
+            className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-full transition duration-300 ease-in-out"
+          >
+            Upload & Extract
+          </button>
+
+          {posts.length > 0 && (
+            <div className="w-full bg-white/20 rounded-md p-4 flex flex-col items-center">
+              <h2 className="text-black text-lg font-bold mb-2">
+                Post {currentPostIndex + 1} of {posts.length}
+              </h2>
+              {renderCurrentPost()}
+              <div className="mt-4 flex space-x-4">
+                <button
+                  onClick={showPreviousPost}
+                  className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-3 rounded-full"
+                >
+                  &lt;
+                </button>
+                <button
+                  onClick={handleUsePost}
+                  className="bg-green-500 hover:bg-green-600 text-white font-semibold py-1 px-3 rounded-full transition duration-300 ease-in-out"
+                >
+                  Use
+                </button>
+                <button
+                  onClick={showNextPost}
+                  className="bg-gray-500 hover:bg-gray-600 text-white font-semibold py-1 px-3 rounded-full"
+                >
+                  &gt;
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </main>
     </>
   );
 }
