@@ -183,7 +183,14 @@ export default function HomePage() {
   };
 
   const handleUsePost = () => {
-    console.log("Use post clicked (placeholder).");
+    const currentPost = posts[currentPostIndex];
+    if ("url" in currentPost) {
+      console.log("Use video clicked (placeholder).");
+      return handleShareVideo(currentPost.url)
+    } else {
+      console.log("Use photo clicked (placeholder).");
+      return handleSharePhotos(currentPost.links)
+    }
   };
 
   const showNextPhoto = () => {
@@ -238,6 +245,12 @@ export default function HomePage() {
 
     return (
       <div className="flex flex-col items-center">
+        {/* Render Title if available */}
+        {currentPost.title && (
+          <h3 className="text-white text-lg font-semibold mb-2 text-center">
+            {currentPost.title}
+          </h3>
+        )}
         <img
           key={currentPhotoUrl}
           src={currentPhotoUrl}
